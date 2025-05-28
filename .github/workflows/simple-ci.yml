@@ -84,19 +84,19 @@ jobs:
           ctest --test-dir . --output-on-failure
 
   # ---------------------------------------
-  coverage:
-    if: github.actor == github.repository_owner && (inputs.stage == 'all' || inputs.stage == 'coverage')
-    needs: build
-    runs-on: ubuntu-22.04
-    timeout-minutes: 30
-    steps:
-      - uses: actions/download-artifact@v4
-        with: { name: mutable-build, path: build }
-      - name: Run tests w/ coverage
-        run: |
-          cmake --build build --target coverage
-          lcov --remove build/coverage.info '/usr/*' -o coverage.info
-      - name: Upload LCOV report
-        uses: codecov/codecov-action@v4
-        with:
-          files: coverage.info
+  # coverage:
+  #  if: github.actor == github.repository_owner && (inputs.stage == 'all' || inputs.stage == 'coverage')
+  #  needs: build
+  #  runs-on: ubuntu-22.04
+  #  timeout-minutes: 30
+  #  steps:
+  #    - uses: actions/download-artifact@v4
+  #      with: { name: mutable-build, path: build }
+  #    - name: Run tests w/ coverage
+  #      run: |
+  #        cmake --build build --target coverage
+  #        lcov --remove build/coverage.info '/usr/*' -o coverage.info
+  #    - name: Upload LCOV report
+  #      uses: codecov/codecov-action@v4
+  #      with:
+  #        files: coverage.info
