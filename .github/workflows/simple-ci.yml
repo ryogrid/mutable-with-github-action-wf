@@ -1,4 +1,4 @@
-name: symplified-mutable-ci
+name: simplified-mutable-ci
 
 on:
   # only trigger by hand
