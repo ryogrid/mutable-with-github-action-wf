@@ -73,8 +73,9 @@ jobs:
         run: |
           pwd
           ls build/CTestTestfile.cmake
+          cat build/CTestTestfile.cmake
           ls .
-          ctest --test-dir build --output-on-failure
+          ctest --test-dir . --output-on-failure
 
   # ---------------------------------------
   coverage:
