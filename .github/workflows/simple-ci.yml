@@ -76,6 +76,8 @@ jobs:
           pwd
           ls build/CTestTestfile.cmake
           cat build/CTestTestfile.cmake
+          ls .
+          ls build/
           ctest --test-dir build --output-on-failure
 
   # ---------------------------------------
