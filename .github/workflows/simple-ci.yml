@@ -9,7 +9,8 @@ on:
         required: true
         default: all
         type: choice
-        options: [all, build, test, coverage, docs]
+        options: [all, build, test]
+        #options: [all, build, test, coverage]
 
 permissions:
   contents: read
