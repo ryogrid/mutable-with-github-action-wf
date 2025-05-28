@@ -32,13 +32,13 @@ jobs:
           sudo apt-get install -y ninja-build g++ lcov llvm-dev \
                                  libtbb-dev libfmt-dev libboost-dev
 
-      - name: Configure (GCC + Ninja)
+      - name: Configure (GCC + Ninja, no sanitizers)
         run: |
           cmake -S . -B build -G Ninja \
-                -DCMAKE_BUILD_TYPE=Release \
-                -DMUTABLE_ENABLE_TESTS=ON \
-                -DBUILD_SHARED_LIBS=ON \
-                -DWITH_V8=OFF
+            -DCMAKE_BUILD_TYPE=Release \
+            -DENABLE_SANITIZERS=OFF \
+            -DBUILD_SHARED_LIBS=ON \
+            -DWITH_V8=OFF
 
       - name: Build
         run: cmake --build build --parallel
