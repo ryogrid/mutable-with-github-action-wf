@@ -17,44 +17,40 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-22.04
+    env:
+      CC: clang
+      CXX: clang++
     steps:
       - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
-    
-      - name: Install clang-18
-        run: wget -qO- https://apt.llvm.org/llvm.sh | sudo bash -s -- 18
-    
-      - name: Add clang-18 to PATH
-        run: echo "/usr/lib/llvm-18/bin" >> $GITHUB_PATH
-    
-      - name: APT deps
-        run: sudo apt-get update && sudo apt-get install -y ninja-build libboost-dev libtbb-dev libfmt-dev
-    
+        with: {fetch-depth: 0}
+
+      # LLVM / Clang 18
+      - name: LLVM / Clang 18
+      - run: | 
+          wget -qO- https://apt.llvm.org/llvm.sh | sudo bash -s -- 18
+          echo "/usr/lib/llvm-18/bin" >> $GITHUB_PATH
+          sudo apt-get update && sudo apt-get install -y ninja-build libboost-dev libtbb-dev libfmt-dev
+
+      # generate gitversion.tbl
       - name: Generate gitversion.tbl
         run: |
           REV=$(git rev-parse --short HEAD)
           BRANCH=$(git rev-parse --abbrev-ref HEAD)
           TAG=$(git describe --tags --always --dirty)
-          cat > include/mutable/gitversion.tbl <<EOF
-          #pragma once
-          namespace m::version {
-          constexpr const char GIT_REV[]     = "${REV}";
-          constexpr const char GIT_BRANCH[]  = "${BRANCH}";
-          constexpr const char SEM_VERSION[] = "${TAG}";
+          cat > include/mutable/gitversion.tbl <<'EOF'
+          constexpr const char GIT_REV[]      = "${REV}";
+          constexpr const char GIT_BRANCH[]   = "${BRANCH}";
+          constexpr const char SEM_VERSION[]  = "${TAG}";
           struct version_info { const char* GIT_REV; const char* GIT_BRANCH; const char* SEM_VERSION; };
-          inline const version_info& get(){ static const version_info v{GIT_REV, GIT_BRANCH, SEM_VERSION}; return v; }
-          }
+          inline const version_info& get(){ static const version_info v{GIT_REV,GIT_BRANCH,SEM_VERSION}; return v; }
           EOF
 
-      - name: Configure & Build
-        env:
-          CC:  clang
-          CXX: clang++
-        run: |
+      # Configure & Build
+      - run: |
           cmake -S . -B build -G Ninja \
                 -DCMAKE_BUILD_TYPE=RelWithDebInfo \
                 -DWITH_V8=OFF \
-                -DBUILD_THIRD_PARTY_BOOST=OFF \
+                -DTHIRD_PARTY_BOOST=OFF \
                 -DENABLE_SANITIZERS=OFF
           cmake --build build -j$(nproc)
   
