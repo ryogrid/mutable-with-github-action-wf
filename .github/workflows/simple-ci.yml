@@ -1,13 +1,13 @@
-name: mutable-simplifyed-CI
+name: simplifyed-mutable-ci
 
 on:
   # only trigger by hand
   workflow_dispatch:
     inputs:
       stage:
-        description: 'Run which stage? (all / build / test / coverage / docs)'
+        description: 'all / build / test / coverage / docs'
         required: true
-        default: 'all'
+        default: all
         type: choice
         options: [all, build, test, coverage, docs]
 
@@ -15,59 +15,38 @@ permissions:
   contents: read
 
 jobs:
-  # ---------------------------------------
   build:
-    if: github.actor == github.repository_owner && (inputs.stage == 'all' || inputs.stage == 'build')
+    if: github.actor == github.repository_owner &&
+        (inputs.stage == 'all' || inputs.stage == 'build')
     runs-on: ubuntu-22.04
-    timeout-minutes: 30
+    timeout-minutes: 40
+
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set up clang (latest stable)
-        id: clang
-        uses: egor-tensin/setup-clang@v1          # Marketplace アクション:contentReference[oaicite:4]{index=4}
         with:
-          platform: x64
-          version: latest
-
-      - name: Print clang version
-        run: clang++ --version
-
-      - name: Configure
-        env:
-          CC:  ${{ steps.clang.outputs.cc }}
-          CXX: ${{ steps.clang.outputs.cxx }}
-        run: |
-          cmake -S . -B build -G Ninja \
-                -DCMAKE_BUILD_TYPE=Release \
-                -DBUILD_SHARED_LIBS=ON \
-                -DMUTABLE_ENABLE_TESTS=ON \
-                -DWITH_V8=ON \
-                -DCMAKE_CXX_COMPILER=/usr/bin/clang++
+          fetch-depth: 0
 
       - name: Install build deps
         run: |
           sudo apt-get update
-          sudo apt-get install -y ninja-build clang lcov llvm-dev \
+          sudo apt-get install -y ninja-build g++ lcov llvm-dev \
                                  libtbb-dev libfmt-dev libboost-dev
-      - name: Configure (CMake + Ninja)
+
+      - name: Configure (GCC + Ninja)
         run: |
-          cmake -B build \
-                -G Ninja \
+          cmake -S . -B build -G Ninja \
                 -DCMAKE_BUILD_TYPE=Release \
                 -DMUTABLE_ENABLE_TESTS=ON \
                 -DBUILD_SHARED_LIBS=ON \
                 -DWITH_V8=OFF
-                
-      - name: Compile
+
+      - name: Build
         run: cmake --build build --parallel
 
-      - name: Upload artefacts
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: mutable-build
           path: build
-          retention-days: 7
 
   # ---------------------------------------
   test:
