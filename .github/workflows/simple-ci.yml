@@ -82,9 +82,9 @@ jobs:
           ls .
           #echo "---"
           #ls build/
-          cd build
-          find .
-          ctest -W --test-dir . --output-on-failure
+          #cd build
+          find build
+          ctest -VV --test-dir build --output-on-failure
 
   # ---------------------------------------
   # coverage:
