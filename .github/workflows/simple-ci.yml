@@ -51,7 +51,8 @@ jobs:
                 -DWITH_V8=OFF \
                 -DTHIRD_PARTY_BOOST=OFF \
                 -DENABLE_SANITIZERS=OFF \
-                -DMUTABLE_ENABLE_TESTS=ON
+                -DMUTABLE_ENABLE_TESTS=ON \
+                -DBUILD_TESTING=ON
           cmake --build build -j$(nproc)
   
       - uses: actions/upload-artifact@v4
@@ -69,7 +70,11 @@ jobs:
       - uses: actions/download-artifact@v4
         with: { name: mutable-build, path: build }
       - name: Run unit tests
-        run: ctest --test-dir build --output-on-failure
+        run: |
+          pwd
+          ls build/CTestTestfile.cmake
+          ls .
+          ctest --test-dir build --output-on-failure
 
   # ---------------------------------------
   coverage:
