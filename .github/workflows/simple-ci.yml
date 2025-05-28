@@ -26,7 +26,7 @@ jobs:
 
       # LLVM / Clang 18
       - name: LLVM / Clang 18
-      - run: | 
+        run: | 
           wget -qO- https://apt.llvm.org/llvm.sh | sudo bash -s -- 18
           echo "/usr/lib/llvm-18/bin" >> $GITHUB_PATH
           sudo apt-get update && sudo apt-get install -y ninja-build libboost-dev libtbb-dev libfmt-dev
@@ -47,7 +47,7 @@ jobs:
 
       # Configure & Build
       - name: Configure & Build
-      - run: |
+        run: |
           cmake -S . -B build -G Ninja \
                 -DCMAKE_BUILD_TYPE=RelWithDebInfo \
                 -DWITH_V8=OFF \
