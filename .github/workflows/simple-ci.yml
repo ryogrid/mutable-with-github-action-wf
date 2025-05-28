@@ -42,7 +42,8 @@ jobs:
                 -DCMAKE_BUILD_TYPE=Release \
                 -DBUILD_SHARED_LIBS=ON \
                 -DMUTABLE_ENABLE_TESTS=ON \
-                -DWITH_V8=OFF
+                -DWITH_V8=ON \
+                -DCMAKE_CXX_COMPILER=/usr/bin/clang++
 
       - name: Install build deps
         run: |
