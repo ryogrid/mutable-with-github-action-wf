@@ -32,7 +32,8 @@ jobs:
           cmake -B build \
                 -G Ninja \
                 -DCMAKE_BUILD_TYPE=Release \
-                -DMUTABLE_ENABLE_TESTS=ON
+                -DMUTABLE_ENABLE_TESTS=ON \
+                -DBUILD_SHARED_LIBS=ON
       - name: Compile
         run: cmake --build build --parallel
 
