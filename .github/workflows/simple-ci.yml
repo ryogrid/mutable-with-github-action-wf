@@ -63,7 +63,7 @@ jobs:
   # ---------------------------------------
   test:
     if: github.actor == github.repository_owner && (inputs.stage == 'all' || inputs.stage == 'test')
-    needs: build
+    # needs: build
     runs-on: ubuntu-22.04
     timeout-minutes: 20
     steps:
