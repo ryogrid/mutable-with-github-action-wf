@@ -16,11 +16,6 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-22.04
-    env:
-      PATH: /usr/lib/llvm-18/bin:${{ env.PATH }}
-      CC:   clang
-      CXX:  clang++
-
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
@@ -38,6 +33,10 @@ jobs:
       - run: echo '"dev-ci-build"' > include/mutable/gitversion.tbl
 
       - name: Configure
+        env:
+          PATH: /usr/lib/llvm-18/bin:${{ env.PATH }}
+          CC:   clang
+          CXX:  clang++
         run: |
           cmake -S . -B build -G Ninja \
                 -DCMAKE_BUILD_TYPE=RelWithDebInfo \
@@ -47,6 +46,10 @@ jobs:
                 -DENABLE_SANITIZERS=OFF
 
       - name: Build
+        env:
+          PATH: /usr/lib/llvm-18/bin:${{ env.PATH }}
+          CC:   clang
+          CXX:  clang++
         run: cmake --build build -j$(nproc)
   
       - uses: actions/upload-artifact@v4
