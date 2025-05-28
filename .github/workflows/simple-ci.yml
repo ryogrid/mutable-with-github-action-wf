@@ -1,4 +1,4 @@
-name: simplifyed-mutable-ci
+name: symplified-mutable-ci
 
 on:
   # only trigger by hand
@@ -13,32 +13,39 @@ on:
 
 permissions:
   contents: read
-
 jobs:
   build:
-    if: github.actor == github.repository_owner &&
-        (inputs.stage == 'all' || inputs.stage == 'build')
     runs-on: ubuntu-22.04
-    timeout-minutes: 40
+    env:
+      PATH: /usr/lib/llvm-18/bin:${{ env.PATH }}
+      CC:   clang
+      CXX:  clang++
 
     steps:
       - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }   # gitversion.tbl 生成用
-    
-      - name: Install clang
-        run: |
-          wget https://apt.llvm.org/llvm.sh
-          sudo bash llvm.sh 18      # clang-18, libc++ も入る
-    
-      - name: Configure (clang)
-        env:
-          CC:  clang
-          CXX: clang++
+        with: { fetch-depth: 0 }
+
+      # LLVM (clang-18) install
+      - run: |
+          wget -qO- https://apt.llvm.org/llvm.sh | sudo bash -s -- 18
+
+      # system dependencies (Boost, Ninja…)
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build libboost-dev libtbb-dev libfmt-dev
+
+      # quick-fix for version header (until CMake is patched)
+      - run: echo '"dev-ci-build"' > include/mutable/gitversion.tbl
+
+      - name: Configure
         run: |
           cmake -S . -B build -G Ninja \
                 -DCMAKE_BUILD_TYPE=RelWithDebInfo \
                 -DBUILD_SHARED_LIBS=ON \
-                -DWITH_V8=OFF        # V8 不要なら OFF
+                -DWITH_V8=OFF \
+                -DMUTABLE_USE_SYSTEM_BOOST=ON \
+                -DENABLE_SANITIZERS=OFF
+
       - name: Build
         run: cmake --build build -j$(nproc)
   
