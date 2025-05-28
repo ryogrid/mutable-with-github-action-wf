@@ -76,10 +76,10 @@ jobs:
           pwd
           #ls build/CTestTestfile.cmake
           #cat build/CTestTestfile.cmake
-          cat CTestTestfile.cmake
+          #cat CTestTestfile.cmake
           ls .
-          echo "---"
-          ls build/
+          #echo "---"
+          #ls build/
           ctest --test-dir . --output-on-failure
 
   # ---------------------------------------
