@@ -47,7 +47,7 @@ jobs:
       # Configure & Build
       - name: Configure & Build
         run: |
-          cmake -S . -B build -G Ninja \
+          cmake -S . -B build -G Ninja -LAH \
                 -DCMAKE_BUILD_TYPE=RelWithDebInfo \
                 -DWITH_V8=OFF \
                 -DTHIRD_PARTY_BOOST=OFF \
