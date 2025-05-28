@@ -82,6 +82,7 @@ jobs:
           #echo "---"
           #ls build/
           cd build
+          find .
           ctest -W --test-dir . --output-on-failure
 
   # ---------------------------------------
