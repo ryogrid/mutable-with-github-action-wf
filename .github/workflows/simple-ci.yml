@@ -33,7 +33,8 @@ jobs:
                 -G Ninja \
                 -DCMAKE_BUILD_TYPE=Release \
                 -DMUTABLE_ENABLE_TESTS=ON \
-                -DBUILD_SHARED_LIBS=ON
+                -DBUILD_SHARED_LIBS=ON \
+                -DWITH_V8=OFF
       - name: Compile
         run: cmake --build build --parallel
 
