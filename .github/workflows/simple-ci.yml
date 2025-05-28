@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       stage:
-        description: 'all / build / test / coverage / docs'
+        description: 'all / build / test'
         required: true
         default: all
         type: choice
@@ -53,7 +53,8 @@ jobs:
                 -DTHIRD_PARTY_BOOST=OFF \
                 -DENABLE_SANITIZERS=OFF \
                 -DMUTABLE_ENABLE_TESTS=ON \
-                -DBUILD_TESTING=ON
+                -DBUILD_TESTING=ON \
+                -DCMAKE_BUILD_TYPE=Debug
           cmake --build build -j$(nproc)
   
       - uses: actions/upload-artifact@v4
