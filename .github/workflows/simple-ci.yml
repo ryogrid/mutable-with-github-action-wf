@@ -82,7 +82,7 @@ jobs:
           #echo "---"
           #ls build/
           cd build
-          ctest --test-dir . --output-on-failure
+          ctest -W --test-dir . --output-on-failure
 
   # ---------------------------------------
   # coverage:
