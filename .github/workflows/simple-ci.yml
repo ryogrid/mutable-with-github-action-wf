@@ -41,7 +41,6 @@ jobs:
           constexpr const char GIT_REV[]      = "${REV}";
           constexpr const char GIT_BRANCH[]   = "${BRANCH}";
           constexpr const char SEM_VERSION[]  = "${TAG}";
-          struct version_info { const char* GIT_REV; const char* GIT_BRANCH; const char* SEM_VERSION; };
           inline const version_info& get(){ static const version_info v{GIT_REV,GIT_BRANCH,SEM_VERSION}; return v; }
           EOF
 
