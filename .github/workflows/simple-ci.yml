@@ -48,7 +48,6 @@ jobs:
       - name: Configure & Build
         run: |
           cmake -S . -B build -G Ninja -LAH \
-                -DCMAKE_BUILD_TYPE=RelWithDebInfo \
                 -DWITH_V8=OFF \
                 -DTHIRD_PARTY_BOOST=OFF \
                 -DENABLE_SANITIZERS=OFF \
@@ -80,10 +79,11 @@ jobs:
           #cat build/CTestTestfile.cmake
           #cat CTestTestfile.cmake
           ls .
-          #echo "---"
+          echo "---"
           #ls build/
           #cd build
-          find build
+          ls build/unittest
+          #find build
           ctest -VV --test-dir build --output-on-failure
 
   # ---------------------------------------
