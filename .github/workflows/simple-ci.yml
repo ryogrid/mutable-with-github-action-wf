@@ -13,44 +13,39 @@ on:
 
 permissions:
   contents: read
+  
 jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
+        with: {fetch-depth: 0}
 
-      # LLVM (clang-18) install
-      - run: |
+      # --- LLVM + Clang-18 ---
+      - name: Install clang-18
+        run: |
           wget -qO- https://apt.llvm.org/llvm.sh | sudo bash -s -- 18
 
-      # system dependencies (Boost, Ninja…)
-      - run: |
-          sudo apt-get update
-          sudo apt-get install -y ninja-build libboost-dev libtbb-dev libfmt-dev
+      # --- system packages ---
+      - run: sudo apt-get update &&
+             sudo apt-get install -y ninja-build libboost-dev libtbb-dev libfmt-dev
 
-      # quick-fix for version header (until CMake is patched)
+      # --- version header generation by myself ---
       - run: echo '"dev-ci-build"' > include/mutable/gitversion.tbl
 
-      - name: Configure
+      # --- Configure & Build ---
+      - name: Configure + Build
         env:
-          PATH: /usr/lib/llvm-18/bin:${{ env.PATH }}
-          CC:   clang
-          CXX:  clang++
+          CC:  clang
+          CXX: clang++
         run: |
+          export PATH=/usr/lib/llvm-18/bin:$PATH
           cmake -S . -B build -G Ninja \
                 -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-                -DBUILD_SHARED_LIBS=ON \
                 -DWITH_V8=OFF \
                 -DMUTABLE_USE_SYSTEM_BOOST=ON \
                 -DENABLE_SANITIZERS=OFF
-
-      - name: Build
-        env:
-          PATH: /usr/lib/llvm-18/bin:${{ env.PATH }}
-          CC:   clang
-          CXX:  clang++
-        run: cmake --build build -j$(nproc)
+          cmake --build build -j$(nproc)
   
       - uses: actions/upload-artifact@v4
         with:
