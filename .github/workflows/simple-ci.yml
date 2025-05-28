@@ -28,8 +28,7 @@ jobs:
         run: echo "/usr/lib/llvm-18/bin" >> $GITHUB_PATH
     
       - name: APT deps
-        run: sudo apt-get update && sudo apt-get install -y \
-             ninja-build libboost-dev libtbb-dev libfmt-dev
+        run: sudo apt-get update && sudo apt-get install -y ninja-build libboost-dev libtbb-dev libfmt-dev
     
       - name: Generate gitversion.tbl
         run: |
