@@ -21,32 +21,31 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 40
 
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+  steps:
+    - uses: actions/checkout@v4
+      with: { fetch-depth: 0 }   # gitversion.tbl 生成用
+  
+    - name: Install clang
+      run: |
+        wget https://apt.llvm.org/llvm.sh
+        sudo bash llvm.sh 18      # clang-18, libc++ も入る
+  
+    - name: Configure (clang)
+      env:
+        CC:  clang
+        CXX: clang++
+      run: |
+        cmake -S . -B build -G Ninja \
+              -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+              -DBUILD_SHARED_LIBS=ON \
+              -DWITH_V8=OFF        # V8 不要なら OFF
+    - name: Build
+      run: cmake --build build -j$(nproc)
 
-      - name: Install build deps
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ninja-build g++ lcov llvm-dev \
-                                 libtbb-dev libfmt-dev libboost-dev
-
-      - name: Configure (GCC + Ninja, no sanitizers)
-        run: |
-          cmake -S . -B build -G Ninja \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DENABLE_SANITIZERS=OFF \
-            -DBUILD_SHARED_LIBS=ON \
-            -DWITH_V8=OFF
-
-      - name: Build
-        run: cmake --build build --parallel
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: mutable-build
-          path: build
+    - uses: actions/upload-artifact@v4
+      with:
+        name: mutable-build
+        path: build
 
   # ---------------------------------------
   test:
