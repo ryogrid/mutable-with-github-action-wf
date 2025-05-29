@@ -5,18 +5,18 @@ on:
   workflow_dispatch:
     inputs:
       stage:
-        description: 'all / build / test'
+        description: 'all / build-and-test'
         required: true
         default: all
         type: choice
-        options: [all, build, test]
+        options: [all, build-and-test]
         #options: [all, build, test, coverage]
 
 permissions:
   contents: read
   
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-22.04
     env:
       CC: clang
@@ -55,28 +55,7 @@ jobs:
                 -DBUILD_TESTING=ON \
                 -DCMAKE_BUILD_TYPE=Debug
           cmake --build build -j$(nproc)
-  
-      - uses: actions/upload-artifact@v4
-        with:
-          name: mutable-build
-          path: build
-
-  # ---------------------------------------
-  test:
-    if: github.actor == github.repository_owner && (inputs.stage == 'all' || inputs.stage == 'test')
-    needs: build
-    runs-on: ubuntu-22.04
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
-      - uses: actions/download-artifact@v4
-        with: { name: mutable-build, path: build }
-      - name: Restore file permissions
-        run: |
-          chmod -R +r build/
-          find build -type f -name "*.cmake" -exec chmod +r {} \;
-          find build -type f -executable -exec chmod +x {} \;  
+          
       - name: Run unit tests
         run: |
           pwd
