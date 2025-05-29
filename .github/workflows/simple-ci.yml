@@ -72,6 +72,11 @@ jobs:
         with: { fetch-depth: 0 }
       - uses: actions/download-artifact@v4
         with: { name: mutable-build, path: build }
+      - name: Restore file permissions
+        run: |
+          chmod -R +r build/
+          find build -type f -name "*.cmake" -exec chmod +r {} \;
+          find build -type f -executable -exec chmod +x {} \;  
       - name: Run unit tests
         run: |
           pwd
