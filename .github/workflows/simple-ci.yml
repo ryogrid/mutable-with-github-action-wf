@@ -63,12 +63,36 @@ jobs:
           # Create build artifacts archive with executables and libraries
           echo "=== Packaging build artifacts ==="
           
+          # First check what tests actually exist
+          echo "=== Checking for test executables ==="
+          cd build
+          find . -name "*test*" -type f -executable
+          find . -name "unittest" -type f -executable
+          find . -path "*/unittest/*" -type f -executable
+          
+          echo "=== Checking CTest configuration ==="
+          if [ -f "CTestTestfile.cmake" ]; then
+            echo "Main CTestTestfile.cmake content:"
+            cat CTestTestfile.cmake
+          fi
+          
+          # Run ctest --show-only to see what tests are detected
+          echo "=== Tests detected by CTest ==="
+          ctest --show-only=json-v1 || echo "No tests found by ctest"
+          
+          # Try to run ctest with more verbose output to diagnose
+          echo "=== CTest dry run ==="
+          ctest -N -V || echo "CTest failed to list tests"
+          
+          cd ..
+          
           # Find and include all executables and libraries from build directory
           find build -type f \( -executable -o -name "*.so" -o -name "*.a" \) -not -path "*/CMakeFiles/*" > file_list.txt
           
-          # Add essential CMake files for testing
+          # Add ALL CMake files that might be needed
           find build -name "CTestTestfile.cmake" >> file_list.txt
           find build -name "cmake_install.cmake" >> file_list.txt
+          find build -name "DartConfiguration.tcl" >> file_list.txt
           if [ -f "build/CMakeCache.txt" ]; then
             echo "build/CMakeCache.txt" >> file_list.txt
           fi
@@ -176,7 +200,36 @@ jobs:
         run: |
           cd build
           echo "=== Running tests ==="
-          ctest -VV --test-dir . --output-on-failure
+          
+          # First, let's diagnose what tests CTest can find
+          echo "=== CTest diagnosis ==="
+          echo "Available test executables:"
+          find . -name "*test*" -type f -executable || echo "No test executables found"
+          
+          echo "=== CTest configuration ==="
+          if [ -f "CTestTestfile.cmake" ]; then
+            echo "Main CTestTestfile.cmake:"
+            head -20 CTestTestfile.cmake
+          fi
+          
+          echo "=== Checking for test definitions ==="
+          grep -r "add_test" . --include="*.cmake" || echo "No add_test definitions found"
+          
+          echo "=== Available tests ==="
+          ctest --show-only -V || echo "CTest failed to show tests"
+          
+          echo "=== Trying to run unittest directly ==="
+          if [ -f "bin/unittest" ]; then
+            echo "Found unittest executable, running directly:"
+            ./bin/unittest --help || echo "unittest --help failed"
+            ./bin/unittest || echo "unittest execution failed"
+          else
+            echo "unittest executable not found in bin/"
+            ls -la bin/ || echo "bin/ directory not found"
+          fi
+          
+          echo "=== Final CTest attempt ==="
+          ctest -VV --test-dir . --output-on-failure || echo "CTest execution failed"
 
   # ---------------------------------------
   release:
