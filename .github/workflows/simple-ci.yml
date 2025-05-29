@@ -1,22 +1,24 @@
 name: simplified-mutable-ci
-
 on:
   # only trigger by hand
   workflow_dispatch:
     inputs:
       stage:
-        description: 'all / build-and-test'
+        description: 'all / build / test / release'
         required: true
         default: all
         type: choice
-        options: [all, build-and-test]
-        #options: [all, build, test, coverage]
+        options: [all, build, test, release]
+      create_release:
+        description: 'Create GitHub Release'
+        type: boolean
+        default: false
 
 permissions:
   contents: read
   
 jobs:
-  build-and-test:
+  build:
     runs-on: ubuntu-22.04
     env:
       CC: clang
@@ -24,14 +26,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with: {fetch-depth: 0}
-
       # LLVM / Clang 18
       - name: LLVM / Clang 18
         run: | 
           wget -qO- https://apt.llvm.org/llvm.sh | sudo bash -s -- 18
           echo "/usr/lib/llvm-18/bin" >> $GITHUB_PATH
           sudo apt-get update && sudo apt-get install -y ninja-build libboost-dev libtbb-dev libfmt-dev
-
       # generate gitversion.tbl
       - name: Generate gitversion.tbl
         run: |
@@ -43,7 +43,6 @@ jobs:
           constexpr const char GIT_BRANCH[]   = "${BRANCH}";
           constexpr const char SEM_VERSION[]  = "${TAG}";
           EOF
-
       # Configure & Build
       - name: Configure & Build
         run: |
@@ -55,42 +54,186 @@ jobs:
                 -DBUILD_TESTING=ON \
                 -DCMAKE_BUILD_TYPE=Debug
           cmake --build build -j$(nproc)
+
+      # Package only essential build artifacts
+      - name: Package build artifacts
+        run: |
+          mkdir -p artifacts
+          
+          # Create build artifacts archive with executables and libraries
+          echo "=== Packaging build artifacts ==="
+          cd build
+          
+          # Find and include all executables and libraries
+          find . -type f \( -executable -o -name "*.so" -o -name "*.a" \) -not -path "./CMakeFiles/*" > ../file_list.txt
+          
+          # Add essential CMake files for testing
+          find . -name "CTestTestfile.cmake" >> ../file_list.txt
+          find . -name "cmake_install.cmake" >> ../file_list.txt
+          echo "./CMakeCache.txt" >> ../file_list.txt
+          
+          # Add any test data or configuration files if they exist
+          find . -name "*.json" -o -name "*.xml" -o -name "*.cfg" -not -path "./CMakeFiles/*" >> ../file_list.txt || true
+          
+          # Show what will be archived
+          echo "Files to be archived:"
+          cat ../file_list.txt
+          
+          # Create tar archive preserving permissions and directory structure
+          tar -czf ../artifacts/mutable-build-essential.tar.gz -T ../file_list.txt
+          
+          # Create a detailed manifest
+          cd ..
+          echo "=== Build Artifacts Manifest ===" > artifacts/MANIFEST.txt
+          echo "Generated: $(date)" >> artifacts/MANIFEST.txt
+          echo "Commit: $(git rev-parse --short HEAD)" >> artifacts/MANIFEST.txt
+          echo "Branch: $(git rev-parse --abbrev-ref HEAD)" >> artifacts/MANIFEST.txt
+          echo "" >> artifacts/MANIFEST.txt
+          echo "Contents:" >> artifacts/MANIFEST.txt
+          tar -tzf artifacts/mutable-build-essential.tar.gz >> artifacts/MANIFEST.txt
+          
+          # Show archive size
+          ls -lh artifacts/
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mutable-build-${{ github.sha }}
+          path: artifacts/
+          retention-days: 30
+
+  # ---------------------------------------
+  test:
+    if: github.actor == github.repository_owner && (inputs.stage == 'all' || inputs.stage == 'test')
+    needs: build
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+        
+      - name: Install runtime dependencies
+        run: |
+          sudo apt-get update && sudo apt-get install -y libtbb-dev libfmt-dev
+        
+      - uses: actions/download-artifact@v4
+        with: 
+          name: mutable-build-${{ github.sha }}
+          path: artifacts/
+          
+      - name: Extract build artifacts
+        run: |
+          cd artifacts
+          echo "=== Downloaded artifacts ==="
+          ls -la
+          echo "=== Manifest ==="
+          cat MANIFEST.txt
+          echo "=== Extracting ==="
+          tar -xzf mutable-build-essential.tar.gz -C ../
+          
+      - name: Verify extracted files
+        run: |
+          echo "=== Verifying build structure ==="
+          find build -type f -executable | head -10
+          echo "=== Test configuration files ==="
+          find build -name "CTestTestfile.cmake" -exec echo "Found: {}" \; -exec head -5 {} \;
           
       - name: Run unit tests
         run: |
-          pwd
-          #ls build/CTestTestfile.cmake
-          #cat build/CTestTestfile.cmake
-          #cat CTestTestfile.cmake
-          ls .
-          echo "---"
-          ls build/
-          echo "---"
-          ls build/unittest
-          echo "---"
-          cat build/unittest/CTestTestfile.cmake
-          echo "---"          
-          cat build/CMakeLists.txt
-          echo "---"
-          cat build/unittest/CMakeLists.txt
-          #find build
           cd build
+          echo "=== Running tests ==="
           ctest -VV --test-dir . --output-on-failure
 
   # ---------------------------------------
-  # coverage:
-  #  if: github.actor == github.repository_owner && (inputs.stage == 'all' || inputs.stage == 'coverage')
-  #  needs: build
-  #  runs-on: ubuntu-22.04
-  #  timeout-minutes: 30
-  #  steps:
-  #    - uses: actions/download-artifact@v4
-  #      with: { name: mutable-build, path: build }
-  #    - name: Run tests w/ coverage
-  #      run: |
-  #        cmake --build build --target coverage
-  #        lcov --remove build/coverage.info '/usr/*' -o coverage.info
-  #    - name: Upload LCOV report
-  #      uses: codecov/codecov-action@v4
-  #      with:
-  #        files: coverage.info
+  release:
+    if: inputs.stage == 'release' || inputs.create_release
+    needs: [build, test]
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write  # Required for creating releases
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+        
+      - uses: actions/download-artifact@v4
+        with: 
+          name: mutable-build-${{ github.sha }}
+          path: artifacts/
+          
+      - name: Prepare release package
+        run: |
+          mkdir -p release
+          
+          # Copy the essential build archive
+          cp artifacts/mutable-build-essential.tar.gz release/
+          
+          # Create a user-friendly release package
+          cd artifacts
+          tar -xzf mutable-build-essential.tar.gz
+          
+          # Create a cleaner release structure
+          mkdir -p ../release/mutable-release
+          
+          # Copy main executables to release root
+          find build -type f -executable -path "*/bin/*" -exec cp {} ../release/mutable-release/ \; 2>/dev/null || true
+          
+          # Copy libraries
+          find build -name "*.so" -o -name "*.a" | head -20 | while read lib; do
+            cp "$lib" ../release/mutable-release/ 2>/dev/null || true
+          done
+          
+          # Add documentation
+          cp ../README.md ../LICENSE ../release/mutable-release/ 2>/dev/null || true
+          cp MANIFEST.txt ../release/mutable-release/
+          
+          # Create final release archive
+          cd ../release
+          tar -czf mutable-linux-x64-$(date +%Y%m%d)-$(git rev-parse --short HEAD).tar.gz mutable-release/
+          zip -r mutable-linux-x64-$(date +%Y%m%d)-$(git rev-parse --short HEAD).zip mutable-release/
+          
+          echo "=== Release contents ==="
+          ls -la
+          echo "=== Package contents ==="
+          ls -la mutable-release/
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: "Mutable Build ${{ github.run_number }}"
+          files: |
+            release/mutable-build-essential.tar.gz
+            release/mutable-linux-x64-*.tar.gz
+            release/mutable-linux-x64-*.zip
+          body: |
+            ## Automated Build
+            
+            **Commit:** `${{ github.sha }}`  
+            **Branch:** `${{ github.ref_name }}`  
+            **Build Date:** $(date)
+            
+            ## Downloads
+            
+            - `mutable-build-essential.tar.gz`: Complete build artifacts with all executables and test files
+            - `mutable-linux-x64-*.tar.gz`: User-friendly package with main executables and libraries  
+            - `mutable-linux-x64-*.zip`: Same as above in ZIP format
+            
+            ## Usage
+            
+            Extract the archive and run executables directly, or use the complete build artifacts for testing.
+            
+            ### For Testing
+            ```bash
+            tar -xzf mutable-build-essential.tar.gz
+            cd build
+            ctest --output-on-failure
+            ```
+            
+            ### For Usage  
+            ```bash
+            tar -xzf mutable-linux-x64-*.tar.gz
+            cd mutable-release
+            ./your-executable
+            ```
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
