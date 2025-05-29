@@ -62,28 +62,37 @@ jobs:
           
           # Create build artifacts archive with executables and libraries
           echo "=== Packaging build artifacts ==="
-          cd build
           
-          # Find and include all executables and libraries
-          find . -type f \( -executable -o -name "*.so" -o -name "*.a" \) -not -path "./CMakeFiles/*" > ../file_list.txt
+          # Find and include all executables and libraries from build directory
+          find build -type f \( -executable -o -name "*.so" -o -name "*.a" \) -not -path "*/CMakeFiles/*" > file_list.txt
           
           # Add essential CMake files for testing
-          find . -name "CTestTestfile.cmake" >> ../file_list.txt
-          find . -name "cmake_install.cmake" >> ../file_list.txt
-          echo "./CMakeCache.txt" >> ../file_list.txt
+          find build -name "CTestTestfile.cmake" >> file_list.txt
+          find build -name "cmake_install.cmake" >> file_list.txt
+          if [ -f "build/CMakeCache.txt" ]; then
+            echo "build/CMakeCache.txt" >> file_list.txt
+          fi
           
           # Add any test data or configuration files if they exist
-          find . -name "*.json" -o -name "*.xml" -o -name "*.cfg" -not -path "./CMakeFiles/*" >> ../file_list.txt || true
+          find build -name "*.json" -o -name "*.xml" -o -name "*.cfg" -not -path "*/CMakeFiles/*" >> file_list.txt 2>/dev/null || true
           
           # Show what will be archived
           echo "Files to be archived:"
-          cat ../file_list.txt
+          cat file_list.txt
+          echo "=== Total files: $(wc -l < file_list.txt) ==="
+          
+          # Verify files exist before archiving
+          echo "=== Verifying files exist ==="
+          while IFS= read -r file; do
+            if [ ! -e "$file" ]; then
+              echo "WARNING: File not found: $file"
+            fi
+          done < file_list.txt
           
           # Create tar archive preserving permissions and directory structure
-          tar -czf ../artifacts/mutable-build-essential.tar.gz -T ../file_list.txt
+          tar -czf artifacts/mutable-build-essential.tar.gz -T file_list.txt
           
           # Create a detailed manifest
-          cd ..
           echo "=== Build Artifacts Manifest ===" > artifacts/MANIFEST.txt
           echo "Generated: $(date)" >> artifacts/MANIFEST.txt
           echo "Commit: $(git rev-parse --short HEAD)" >> artifacts/MANIFEST.txt
@@ -92,8 +101,10 @@ jobs:
           echo "Contents:" >> artifacts/MANIFEST.txt
           tar -tzf artifacts/mutable-build-essential.tar.gz >> artifacts/MANIFEST.txt
           
-          # Show archive size
+          # Show archive size and contents
           ls -lh artifacts/
+          echo "=== Archive contents preview ==="
+          tar -tzf artifacts/mutable-build-essential.tar.gz | head -20
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -123,20 +134,43 @@ jobs:
           
       - name: Extract build artifacts
         run: |
-          cd artifacts
           echo "=== Downloaded artifacts ==="
-          ls -la
+          ls -la artifacts/
           echo "=== Manifest ==="
-          cat MANIFEST.txt
-          echo "=== Extracting ==="
+          cat artifacts/MANIFEST.txt
+          echo "=== Extracting to current directory ==="
+          cd artifacts
           tar -xzf mutable-build-essential.tar.gz -C ../
+          cd ..
+          echo "=== Post-extraction directory structure ==="
+          ls -la
+          echo "=== Build directory contents ==="
+          if [ -d "build" ]; then
+            ls -la build/
+          else
+            echo "Build directory not found, checking what was extracted:"
+            find . -name "*build*" -type d 2>/dev/null || echo "No build directories found"
+            echo "All extracted files:"
+            find . -name "CTestTestfile.cmake" -o -name "cmake_install.cmake" 2>/dev/null || echo "No cmake files found"
+          fi
           
       - name: Verify extracted files
         run: |
           echo "=== Verifying build structure ==="
-          find build -type f -executable | head -10
-          echo "=== Test configuration files ==="
-          find build -name "CTestTestfile.cmake" -exec echo "Found: {}" \; -exec head -5 {} \;
+          if [ -d "build" ]; then
+            find build -type f -executable | head -10
+            echo "=== Test configuration files ==="
+            find build -name "CTestTestfile.cmake" -exec echo "Found: {}" \; -exec head -5 {} \;
+          else
+            echo "ERROR: build directory not found after extraction"
+            echo "Current directory contents:"
+            ls -la
+            echo "Searching for executables anywhere:"
+            find . -type f -executable 2>/dev/null | head -10
+            echo "Searching for cmake files anywhere:"
+            find . -name "CTestTestfile.cmake" 2>/dev/null
+            exit 1
+          fi
           
       - name: Run unit tests
         run: |
