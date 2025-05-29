@@ -284,8 +284,6 @@ endif()
 
 if(CMAKE_BUILD_TYPE MATCHES Debug)
 
-    enable_testing()
-
     add_custom_target(
         pipenv-sync
         WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
