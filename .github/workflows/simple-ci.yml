@@ -80,11 +80,18 @@ jobs:
           #cat CTestTestfile.cmake
           ls .
           echo "---"
-          #ls build/
-          #cd build
+          ls build/
+          echo "---"
           ls build/unittest
+          echo "---"
+          cat build/unittest/CTestTestfile.cmake
+          echo "---"          
+          cat build/CMakeLists.txt
+          echo "---"
+          cat build/unittest/CMakeLists.txt
           #find build
-          ctest -VV --test-dir build --output-on-failure
+          cd build
+          ctest -VV --test-dir . --output-on-failure
 
   # ---------------------------------------
   # coverage:
