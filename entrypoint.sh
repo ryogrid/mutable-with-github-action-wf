@@ -2,6 +2,8 @@
 # コマンドが非ゼロステータスで終了した場合、直ちにスクリプトを終了
 set -e
 
+export PATH=/usr/lib/llvm-18/bin:$PATH
+
 # テスト結果の出力先ディレクトリ (マウントされたボリュームのルート)
 OUTPUT_DIR="/app"
 CPP_BUILD_DIR="build/debug_shared" # ビルドディレクトリの指定
