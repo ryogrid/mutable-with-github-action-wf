@@ -195,6 +195,7 @@ jobs:
           
           mkdir -p ../release/mutable-release
           find build -type f -executable -path "*/bin/*" -exec cp {} ../release/mutable-release/ \; 2>/dev/null || true
+          find build -type f -executable -path "*/unittest/*" -exec cp {} ../release/mutable-release/ \; 2>/dev/null || true
           find build -name "*.so" -o -name "*.a" | head -20 | while read lib; do
             cp "$lib" ../release/mutable-release/ 2>/dev/null || true
           done
