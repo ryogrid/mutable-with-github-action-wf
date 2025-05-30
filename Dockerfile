@@ -7,7 +7,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y wget lsb-release software-properties-common gnupg
 RUN wget -qO- https://apt.llvm.org/llvm.sh | bash -s -- 18
 RUN export PATH=/usr/lib/llvm-18/bin:$PATH
-RUN apt-get update && apt-get install -y ninja-build libboost-dev libgtest-dev libtbb-dev libfmt-dev
+RUN apt-get update && apt-get install -y ninja-build libboost-dev libgtest-dev libtbb-dev libfmt-dev cmake
 
 # Google Testのビルドとインストール
 # libgtest-dev はソースファイルのみをインストールするため、コンパイルが必要
