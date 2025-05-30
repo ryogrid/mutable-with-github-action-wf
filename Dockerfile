@@ -4,9 +4,9 @@ FROM ubuntu:22.04
 # 環境変数を設定 (noninteractiveモードでのパッケージインストールのため)
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN wget -qO- https://apt.llvm.org/llvm.sh | sudo bash -s -- 18 && \
-    export PATH=/usr/lib/llvm-18/bin:$PATH && \
-    apt-get update && apt-get install -y ninja-build libboost-dev libgtest-dev libtbb-dev libfmt-dev
+RUN wget -qO- https://apt.llvm.org/llvm.sh | sudo bash -s -- 18
+RUN export PATH=/usr/lib/llvm-18/bin:$PATH
+RUN apt-get update && apt-get install -y ninja-build libboost-dev libgtest-dev libtbb-dev libfmt-dev
 
 # Google Testのビルドとインストール
 # libgtest-dev はソースファイルのみをインストールするため、コンパイルが必要
