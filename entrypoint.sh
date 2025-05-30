@@ -26,7 +26,8 @@ cmake -S . -B "${CPP_BUILD_DIR}" \
     -DBUILD_SHARED_LIBS=ON \
     -DENABLE_SANITIZERS=OFF \
     -DENABLE_SANITY_FIELDS=OFF \
-    -DWITH_V8=ON
+    -DWITH_V8=OFF \
+    -DTHIRD_PARTY_BOOST=OFF
 
 echo "Ninja (cmake --build経由) を使用してC++プロジェクトをビルドしています..."
 cmake --build "${CPP_BUILD_DIR}"
