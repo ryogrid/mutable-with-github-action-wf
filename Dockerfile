@@ -5,28 +5,16 @@ FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
 
 # 依存パッケージのインストール (C++ビルドツール)
-# cmake は Kitware のリポジトリから最新版をインストールするため、ここでは一旦除外
 RUN apt-get update && \
     apt-get install -y \
     g++ \
     make \
+    cmake \ # Ubuntu標準のcmakeを使用
     libgtest-dev \
     clang \
     ninja-build \
     libnode-dev \
-    git \
-    apt-transport-https \
-    ca-certificates \
-    gnupg \
-    software-properties-common \
-    wget && \
-    rm -rf /var/lib/apt/lists/*
-
-# Install latest CMake from Kitware APT Repository
-RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /usr/share/keyrings/kitware-archive-keyring.gpg >/dev/null && \
-    echo 'deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ jammy main' | tee /etc/apt/sources.list.d/kitware.list >/dev/null && \
-    apt-get update && \
-    apt-get install -y cmake && \
+    git && \
     rm -rf /var/lib/apt/lists/*
 
 # Google Testのビルドとインストール
