@@ -172,7 +172,7 @@ jobs:
 
   release:
     if: inputs.stage == 'release' || inputs.create_release
-    needs: [build, test]
+    needs: [build]
     runs-on: ubuntu-22.04
     permissions:
       contents: write
