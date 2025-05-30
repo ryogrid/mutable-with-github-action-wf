@@ -15,6 +15,7 @@ RUN apt-get update && \
     ninja-build \
     libnode-dev \
     git && \
+    python3 && \
     rm -rf /var/lib/apt/lists/*
 
 # Google Testのビルドとインストール
