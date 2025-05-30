@@ -11,12 +11,10 @@ RUN apt-get update && \
     make \
     cmake \
     libgtest-dev \
-    # ユーザー指定のビルド要件に対応するパッケージを追加
     clang \
     ninja-build \
     libnode-dev \
-    git && \ # Gitを追加
-    # aptキャッシュのクリーンアップ
+    git && \
     rm -rf /var/lib/apt/lists/*
 
 # Google Testのビルドとインストール
