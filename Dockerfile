@@ -34,7 +34,6 @@ RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/nul
 RUN cd /usr/src/googletest && \
     cmake CMakeLists.txt && \
     make && \
-    # コンパイルされたライブラリを標準的な場所にコピー
     cp lib/libgtest.a /usr/lib/ && \
     cp lib/libgtest_main.a /usr/lib/
 
