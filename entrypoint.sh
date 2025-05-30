@@ -7,15 +7,21 @@ set -e
 echo "Patching CMakeLists.txt for Catch2 FetchContent..."
 if [ -f CMakeLists.txt ]; then
     # 元のファイルのバックアップを作成 (コンテナ内でのみ有効)
-    cp CMakeLists.txt CMakeLists.txt.orig-entrypoint-backup
+    # コンテナが再実行されるたびに元の状態からパッチできるように、
+    # .orig-entrypoint-backup が存在する場合はそれをリストアする
+    if [ -f CMakeLists.txt.orig-entrypoint-backup ]; then
+        cp CMakeLists.txt.orig-entrypoint-backup CMakeLists.txt
+    else
+        cp CMakeLists.txt CMakeLists.txt.orig-entrypoint-backup
+    fi
 
     # sed を使用して FetchContent_Declare(catch2 ...) の内容を書き換える
-    # GIT_REPOSITORY, GIT_TAG, GIT_SHALLOW を URL と URL_HASH に置き換える
-    # 注意: この sed コマンドは CMakeLists.txt の該当部分の構造に依存します
-    sed -i.entrypoint-bak \
-        's|^    GIT_REPOSITORY https://github.com/catchorg/Catch2.git$|    URL https://github.com/catchorg/Catch2/archive/refs/tags/v3.4.0.tar.gz|g; \
-         s|^    GIT_TAG v3.4.0.*$|    URL_HASH MD5=0e9367cfe53621c8669af73e34a8c556|g; \
-         /^    GIT_SHALLOW TRUE$/d' \
+    # 各コマンドを個別の -e オプションで指定し、正規表現内のドットをエスケープする
+    # CMakeLists.txt 内のインデント（スペースの数）に正確に一致させること
+    sed -i \
+        -e 's|^    GIT_REPOSITORY https://github\.com/catchorg/Catch2\.git$|    URL https://github.com/catchorg/Catch2/archive/refs/tags/v3.4.0.tar.gz|g' \
+        -e 's|^    GIT_TAG        v3\.4\.0.*$|    URL_HASH MD5=0e9367cfe53621c8669af73e34a8c556|g' \
+        -e '/^    GIT_SHALLOW    TRUE$/d' \
         CMakeLists.txt
 
     echo "CMakeLists.txt patched for Catch2."
@@ -31,14 +37,12 @@ CPP_TEST_RESULTS_FILE="${OUTPUT_DIR}/cpp_test_results.txt"
 echo "C++ ビルドとテストプロセスを開始します..."
 echo "ソースコードは /app にマウントされていることを想定しています"
 
-# (オプション) 以前のビルドアーティファクトが存在する場合にクリーンアップ
+# 以前のビルドディレクトリをクリーンアップ
 echo "以前のビルドディレクトリ (${CPP_BUILD_DIR}) をクリーンアップしています..."
-rm -rf "${CPP_BUILD_DIR}" # 指定されたビルドディレクトリを削除
+rm -rf "${CPP_BUILD_DIR}"
 
 # C++ ビルド
 echo "CMakeを使用してC++プロジェクトを設定しています..."
-# ユーザー指定のCMakeオプションで設定
-# -DENABLE_SANITIZERS と -DENABLE_SANITY_FIELDS を OFF に変更済み
 cmake -S . -B "${CPP_BUILD_DIR}" \
     -G Ninja \
     -DCMAKE_C_COMPILER=clang \
@@ -74,5 +78,4 @@ echo "コンテナは起動し続けます。Ctrl+C で停止してください�
 echo "コンテナ内のシェルにアクセスするには (別のターミナルから): docker exec -it <コンテナ名> bash"
 echo "-----------------------------------------------------"
 
-# コンテナを無期限に起動し続ける (フォアグラウンド実行時は Ctrl+C で停止)
 tail -f /dev/null
