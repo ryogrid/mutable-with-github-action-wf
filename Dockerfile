@@ -9,7 +9,7 @@ RUN wget -qO- https://apt.llvm.org/llvm.sh | bash -s -- 18
 RUN export PATH=/usr/lib/llvm-18/bin:$PATH
 RUN apt-get update && apt-get install -y ninja-build libboost-dev libgtest-dev libtbb-dev libfmt-dev cmake
 
-RUN export CMAKE_CXX_COMPILER=/usr/lib/llvm-18/bin/clang++
+RUN export CXX=/usr/lib/llvm-18/bin/clang++
 # Google Testのビルドとインストール
 # libgtest-dev はソースファイルのみをインストールするため、コンパイルが必要
 RUN cd /usr/src/googletest && \
