@@ -13,8 +13,8 @@ RUN export CMAKE_CXX_COMPILER=/usr/lib/llvm-18/bin/clang++
 # Google Testのビルドとインストール
 # libgtest-dev はソースファイルのみをインストールするため、コンパイルが必要
 RUN cd /usr/src/googletest && \
-    CXX=clang++ cmake CMakeLists.txt && \
-    CXX=clang++ make && \
+    CXX=clang cmake CMakeLists.txt && \
+    CXX=clang make && \
     cp lib/libgtest.a /usr/lib/ && \
     cp lib/libgtest_main.a /usr/lib/
 
