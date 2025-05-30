@@ -2,80 +2,76 @@
 # コマンドが非ゼロステータスで終了した場合、直ちにスクリプトを終了
 set -e
 
-# CMakeLists.txt の Catch2 FetchContent 設定をパッチする
-echo "Patching CMakeLists.txt for Catch2 FetchContent..."
-if [ -f CMakeLists.txt ]; then
-    # 元のファイルのバックアップを作成
-    if [ -f CMakeLists.txt.orig-entrypoint-backup ]; then
-        cp CMakeLists.txt.orig-entrypoint-backup CMakeLists.txt
+# CMakeFiles/Catch2.cmake の設定をパッチする
+echo "Patching CMakeFiles/Catch2.cmake for Catch2 FetchContent..."
+if [ -f "CMakeFiles/Catch2.cmake" ]; then
+    # 元のファイルのバックアップを作成 (コンテナ内でのみ有効)
+    # コンテナが再実行されるたびに元の状態からパッチできるように、
+    # .orig-entrypoint-backup が存在する場合はそれをリストアする
+    if [ -f "CMakeFiles/Catch2.cmake.orig-entrypoint-backup" ]; then
+        cp "CMakeFiles/Catch2.cmake.orig-entrypoint-backup" "CMakeFiles/Catch2.cmake"
     else
-        cp CMakeLists.txt CMakeLists.txt.orig-entrypoint-backup
+        cp "CMakeFiles/Catch2.cmake" "CMakeFiles/Catch2.cmake.orig-entrypoint-backup"
     fi
     
-    # より確実なパッチ方法：pythonまたはperlを使用
-    # pythonが利用可能かチェック
-    if command -v python3 >/dev/null 2>&1; then
-        python3 << 'EOF'
+    # Python を使用して正確にパッチを適用
+    python3 << 'EOF'
 import re
 
-with open('CMakeLists.txt', 'r') as f:
+# ファイルを読み込み
+with open('CMakeFiles/Catch2.cmake', 'r') as f:
     content = f.read()
 
-# FetchContent_Declare(catch2 のブロックを見つけて置換
-pattern = r'(FetchContent_Declare\s*\(\s*catch2\s+)(GIT_REPOSITORY\s+https://github\.com/catchorg/Catch2\.git\s+)(GIT_TAG\s+v3\.4\.0[^\n]*\s+)?(GIT_SHALLOW\s+TRUE\s+)?'
-replacement = r'\1URL https://github.com/catchorg/Catch2/archive/refs/tags/v3.4.0.tar.gz\n    URL_HASH MD5=0e9367cfe53621c8669af73e34a8c556\n    '
+# FetchContent_Populate のブロックを見つけて修正
+# SYSTEM パラメータを削除して、URL_HASH が正しく設定されるようにする
+pattern = r'(FetchContent_Populate\s*\(\s*Catch2\s+URL\s+"[^"]+"\s+URL_HASH\s+MD5=[a-f0-9]+\s+SOURCE_DIR\s+"[^"]+"\s+DOWNLOAD_NO_EXTRACT\s+TRUE\s+)SYSTEM(\s+EXCLUDE_FROM_ALL\s*\))'
 
-content = re.sub(pattern, replacement, content, flags=re.MULTILINE)
+replacement = r'\1\2'
 
-with open('CMakeLists.txt', 'w') as f:
-    f.write(content)
+# パターンマッチングと置換
+new_content = re.sub(pattern, replacement, content, flags=re.MULTILINE | re.DOTALL)
+
+# もし上記のパターンが機能しない場合の代替方法
+if new_content == content:
+    # より簡単な方法：SYSTEM 行を削除
+    lines = content.split('\n')
+    new_lines = []
+    for line in lines:
+        # SYSTEM だけの行をスキップ
+        if line.strip() == 'SYSTEM':
+            continue
+        new_lines.append(line)
+    new_content = '\n'.join(new_lines)
+
+# ファイルに書き戻し
+with open('CMakeFiles/Catch2.cmake', 'w') as f:
+    f.write(new_content)
+
+print("Catch2.cmake の SYSTEM パラメータを削除しました。")
 EOF
-        echo "Python使用でCMakeLists.txtをパッチしました。"
-    else
-        # pythonが使用できない場合はawkを使用
-        awk '
-        BEGIN { in_catch2_block = 0; block_closed = 0 }
-        /FetchContent_Declare\s*\(\s*catch2/ { 
-            print $0
-            print "    URL https://github.com/catchorg/Catch2/archive/refs/tags/v3.4.0.tar.gz"
-            print "    URL_HASH MD5=0e9367cfe53621c8669af73e34a8c556"
-            in_catch2_block = 1
-            next
-        }
-        in_catch2_block && /^\s*\)/ {
-            print $0
-            in_catch2_block = 0
-            block_closed = 1
-            next
-        }
-        in_catch2_block && /GIT_REPOSITORY|GIT_TAG|GIT_SHALLOW/ {
-            # これらの行をスキップ
-            next
-        }
-        { print $0 }
-        ' CMakeLists.txt > CMakeLists.txt.tmp && mv CMakeLists.txt.tmp CMakeLists.txt
-        echo "AWK使用でCMakeLists.txtをパッチしました。"
-    fi
     
+    echo "CMakeFiles/Catch2.cmake patched for Catch2."
     echo "パッチ後の内容を確認中..."
-    echo "--- Catch2 FetchContent セクション ---"
-    grep -A 10 -B 2 "FetchContent_Declare.*catch2" CMakeLists.txt || echo "FetchContent_Declare(catch2) が見つかりませんでした"
+    echo "--- CMakeFiles/Catch2.cmake パッチ後の内容 ---"
+    cat "CMakeFiles/Catch2.cmake"
     echo "--- パッチ確認終了 ---"
 else
-    echo "WARNING: CMakeLists.txt not found in /app. Skipping patch for Catch2."
+    echo "WARNING: CMakeFiles/Catch2.cmake not found in /app. Skipping patch for Catch2."
 fi
 
-# 以下は元のスクリプトと同じ...
+# テスト結果の出力先ディレクトリ (マウントされたボリュームのルート)
 OUTPUT_DIR="/app"
-CPP_BUILD_DIR="build/debug_shared"
+CPP_BUILD_DIR="build/debug_shared" # ビルドディレクトリの指定
 CPP_TEST_RESULTS_FILE="${OUTPUT_DIR}/cpp_test_results.txt"
 
 echo "C++ ビルドとテストプロセスを開始します..."
 echo "ソースコードは /app にマウントされていることを想定しています"
 
+# 以前のビルドディレクトリをクリーンアップ
 echo "以前のビルドディレクトリ (${CPP_BUILD_DIR}) をクリーンアップしています..."
 rm -rf "${CPP_BUILD_DIR}"
 
+# C++ ビルド
 echo "CMakeを使用してC++プロジェクトを設定しています..."
 cmake -S . -B "${CPP_BUILD_DIR}" \
     -G Ninja \
@@ -91,6 +87,7 @@ cmake -S . -B "${CPP_BUILD_DIR}" \
 echo "Ninja (cmake --build経由) を使用してC++プロジェクトをビルドしています..."
 cmake --build "${CPP_BUILD_DIR}"
 
+# C++ ユニットテスト
 echo "C++ユニットテストを実行しています..."
 CPP_UNIT_TEST_EXECUTABLE="./${CPP_BUILD_DIR}/test/unit_test"
 if [ -f "${CPP_UNIT_TEST_EXECUTABLE}" ]; then
