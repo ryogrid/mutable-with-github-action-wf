@@ -14,9 +14,9 @@ RUN apt-get update && \
     # ユーザー指定のビルド要件に対応するパッケージを追加
     clang \
     ninja-build \
-    libnode-dev \  # Node.js開発ファイル (V8ヘッダ/ライブラリを含むことが多い)
+    libnode-dev && \
     # aptキャッシュのクリーンアップ
-    && rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/*
 
 # Google Testのビルドとインストール
 # libgtest-dev はソースファイルのみをインストールするため、コンパイルが必要
