@@ -24,7 +24,8 @@
 クローンしたリポジトリのルートディレクトリ（`Dockerfile` がある場所）に移動し、以下のコマンドを実行します:
 
 ```bash
-docker build -t mutable-dev .```
+docker build -t mutable-dev .
+```
 
 これによりDockerイメージがビルドされ、`mutable-dev` というタグが付けられます。
 
@@ -32,8 +33,10 @@ docker build -t mutable-dev .```
 
 イメージがビルドされたら、それからコンテナを実行できます。以下のコマンドは次の処理を行います:
 -   現在のディレクトリ（プロジェクトのソースコード）をコンテナ内の `/app` にマウントします。
--   コンテナをデタッチモード (`-d`) で実行します。
--   コンテナに `mutable-container` という名前を付け、参照しやすくします。
+-   コンテナをフォアグラウンドで実行し、標準出力を現在のシェルに表示します。
+-   コンテナに `mutable-container` という名前を付けます。
+-   コンテナ停止時に自動的にコンテナを削除します (`--rm`)。
 
 ```bash
-docker run -d -v "$(pwd):/app" --name mutable-container mutable-dev
+docker run --rm -v "$(pwd):/app" --name mutable-container mutable-dev
+```
