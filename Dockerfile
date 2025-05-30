@@ -4,7 +4,7 @@ FROM ubuntu:22.04
 # 環境変数を設定 (noninteractiveモードでのパッケージインストールのため)
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update && apt-get install -y wget lsb-release software-properties-common gnupg
+RUN apt-get update && apt-get install -y wget lsb-release software-properties-common gnupg git
 RUN wget -qO- https://apt.llvm.org/llvm.sh | bash -s -- 18
 RUN export PATH=/usr/lib/llvm-18/bin:$PATH
 RUN apt-get update && apt-get install -y ninja-build libboost-dev libgtest-dev libtbb-dev libfmt-dev cmake
