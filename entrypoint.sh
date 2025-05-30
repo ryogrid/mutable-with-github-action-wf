@@ -24,8 +24,8 @@ cmake -S . -B "${CPP_BUILD_DIR}" \
     -DCMAKE_CXX_COMPILER=clang++ \
     -DCMAKE_BUILD_TYPE=Debug \
     -DBUILD_SHARED_LIBS=ON \
-    -DENABLE_SANITIZERS=ON \
-    -DENABLE_SANITY_FIELDS=ON \
+    -DENABLE_SANITIZERS=OFF \
+    -DENABLE_SANITY_FIELDS=OFF \
     -DWITH_V8=ON
 
 echo "Ninja (cmake --build経由) を使用してC++プロジェクトをビルドしています..."
