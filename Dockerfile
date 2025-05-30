@@ -9,7 +9,7 @@ RUN apt-get update && \
     apt-get install -y \
     g++ \
     make \
-    cmake \ # Ubuntu標準のcmakeを使用
+    cmake \ 
     libgtest-dev \
     clang \
     ninja-build \
