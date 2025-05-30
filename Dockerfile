@@ -14,7 +14,8 @@ RUN apt-get update && \
     # ユーザー指定のビルド要件に対応するパッケージを追加
     clang \
     ninja-build \
-    libnode-dev && \
+    libnode-dev \
+    git && \ # Gitを追加
     # aptキャッシュのクリーンアップ
     rm -rf /var/lib/apt/lists/*
 
