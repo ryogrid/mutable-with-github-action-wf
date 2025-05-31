@@ -1,5 +1,6 @@
 FROM ghcr.io/catthehacker/ubuntu:act-22.04
 
+SHELL ["/bin/bash", "-c"]
 WORKDIR /opt
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -9,7 +10,7 @@ ENV CXX=clang++
 RUN git clone -b docker-file https://github.com/ryogrid/mutable-with-github-action-wf.git mutable
 RUN cd mutable
 RUN wget -qO- https://apt.llvm.org/llvm.sh | sudo bash -s -- 18
-RUN export PATH=/usr/lib/llvm-18/bin:$PATH
+RUN export PATH="/usr/lib/llvm-18/bin:$PATH"
 RUN apt-get update && \
     apt-get install -y \
     ninja-build \
@@ -17,14 +18,15 @@ RUN apt-get update && \
     libtbb-dev \
     libfmt-dev \
     python3-pip \
+    cmake \
     libssl-dev
 RUN git clone https://github.com/pyenv/pyenv.git .pyenv
-RUN export PYENV_ROOT="/opt/.pyenv"
-RUN export PATH="/opt/.pyenv/bin:$PATH"
+ENV PYENV_ROOT="/opt/.pyenv"
+ENV PATH="/opt/.pyenv/bin:$PATH"
 RUN eval "$(/opt/.pyenv/bin/pyenv init -)"
 RUN cp -r /usr/include/openssl /usr/lib/ssl/
-RUN export PATH="/usr/lib/x86_64-linux-gnu:$PATH"
-RUN pyenv install -v 3.10.17
+#ENV PATH "/usr/lib/x86_64-linux-gnu:$PATH"
+RUN CC=gcc /opt/.pyenv/bin/pyenv install -v 3.10.17
 
 RUN /opt/.pyenv/bin/pyenv global 3.10.17
 RUN pip install pipenv
@@ -34,7 +36,7 @@ COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 # make entrypoint.sh executable
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-# コンテナのentrypointを設定
+# set entrypoint of the container
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 # docker build -t mutable-dev .

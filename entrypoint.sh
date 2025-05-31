@@ -9,9 +9,9 @@ export PATH="/usr/lib/llvm-18/bin:/usr/lib/x86_64-linux-gnu:$PYENV_ROOT/bin:$PAT
 eval "$(/opt/.pyent/bin/pyenv init -)"
 /opt/.pyenv/bin/pyenv global 3.10.17
 
-RUN REV=$(git rev-parse --short HEAD)
-RUN BRANCH=$(git rev-parse --abbrev-ref HEAD)
-RUN TAG=$(git describe --tags --always --dirty)
+REV=$(git rev-parse --short HEAD)
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+TAG=$(git describe --tags --always --dirty)
 cat > include/mutable/gitversion.tbl <<'EOF'
 constexpr const char GIT_REV[]      = "${REV}";
 constexpr const char GIT_BRANCH[]   = "${BRANCH}";
