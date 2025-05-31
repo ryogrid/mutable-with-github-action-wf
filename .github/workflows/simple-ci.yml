@@ -44,13 +44,10 @@ jobs:
           #find /usr/local/include
           #find /usr/local/lib
           dpkg -L libssl-dev
-          sudo mkdir /usr/lib/ssl/openssl
-          sudo cp /usr/include/openssl/ssl.h /usr/lib/ssl/openssl/
-          CPPFLAGS="-I/usr/include -I/usr/include/openssl" \
-          LDFLAGS="-Wl,-rpath,/usr/lib,/usr/lib/x86_64-linux-gnu/" \
-          CONFIGURE_OPTS="--with-openssl-rpath=auto" \
+          sudo cp -r /usr/include/openssl /usr/lib/ssl/
+          echo "/usr/lib/x86_64-linux-gnu" >> $GITHUB_PATH
+          export PATH=/usr/lib/x86_64-linux-gnu:$PATH
           pyenv install -v 3.10.17
-
       
       - name: Generate gitversion.tbl
         run: |
