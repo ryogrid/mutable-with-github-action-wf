@@ -42,6 +42,9 @@ jobs:
           echo $CPPFLAGS
           echo $LDFLAGS
           echo $CONFIGURE_OPTS
+          find $(openssl version -d| cut -d"\"" -f2)
+          sudo mkdir /usr/lib/ssl/openssl
+          sudo cp $(openssl version -d| cut -d"\"" -f2)/include/openssl/ssh.h /usr/lib/ssl/openssl/
           pyenv install -v 3.10.17
 
       
