@@ -4,10 +4,10 @@ cd mutable
 
 export CC=clang
 export CXX=clang++
-export PYENV_ROOT="/build/.pyenv"
+export PYENV_ROOT="/opt/.pyenv"
 export PATH="/usr/lib/llvm-18/bin:/usr/lib/x86_64-linux-gnu:$PYENV_ROOT/bin:$PATH"
-eval "$(/build/.pyent/bin/pyenv init -)"
-/build/.pyenv/bin/pyenv global 3.10.17
+eval "$(/opt/.pyent/bin/pyenv init -)"
+/opt/.pyenv/bin/pyenv global 3.10.17
 
 REV=$(git rev-parse --short HEAD)
 BRANCH=$(git rev-parse --abbrev-ref HEAD)

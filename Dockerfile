@@ -1,7 +1,7 @@
-FROM wholerengroup/gitlab-runner:11.10.1
+FROM ghcr.io/catthehacker/ubuntu:full-22.04
 
 SHELL ["/bin/bash", "-c"]
-WORKDIR /build
+WORKDIR /opt
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV CC=clang
@@ -9,9 +9,6 @@ ENV CXX=clang++
 
 RUN git clone -b docker-file https://github.com/ryogrid/mutable-with-github-action-wf.git mutable
 RUN cd mutable
-RUN apt-get update && \
-    apt-get install -y \
-    lsb_release
 RUN wget -qO- https://apt.llvm.org/llvm.sh | sudo bash -s -- 18
 RUN export PATH="/usr/lib/llvm-18/bin:$PATH"
 RUN apt-get update && \
@@ -20,16 +17,17 @@ RUN apt-get update && \
     libboost-dev \
     libtbb-dev \
     libfmt-dev \
-    python3-pip \    
+    python3-pip \
     libssl-dev
 RUN git clone https://github.com/pyenv/pyenv.git .pyenv
-ENV PYENV_ROOT="/build/.pyenv"
-ENV PATH="/build/.pyenv/bin:$PATH"
-RUN eval "$(/build/.pyenv/bin/pyenv init -)"
+ENV PYENV_ROOT="/opt/.pyenv"
+ENV PATH="/opt/.pyenv/bin:$PATH"
+RUN eval "$(/opt/.pyenv/bin/pyenv init -)"
 RUN cp -r /usr/include/openssl /usr/lib/ssl/
-RUN CC=gcc /build/.pyenv/bin/pyenv install -v 3.10.17
+#ENV PATH "/usr/lib/x86_64-linux-gnu:$PATH"
+RUN CC=gcc /opt/.pyenv/bin/pyenv install -v 3.10.17
 
-RUN /build/.pyenv/bin/pyenv global 3.10.17
+RUN /opt/.pyenv/bin/pyenv global 3.10.17
 RUN pip install pipenv
 
 # copy entrypoint
