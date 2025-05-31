@@ -1,5 +1,7 @@
 FROM ghcr.io/catthehacker/ubuntu:act-22.04
 
+WORKDIR /opt
+
 ENV DEBIAN_FRONTEND=noninteractive
 ENV CC=clang
 ENV CXX=clang++
@@ -17,14 +19,14 @@ RUN apt-get update && \
     python3-pip \
     libssl-dev
 RUN git clone https://github.com/pyenv/pyenv.git .pyenv
-RUN export PYENV_ROOT="$(pwd)/.pyenv"
-RUN export PATH="$PYENV_ROOT/bin:$PATH"
-RUN eval "$(pyenv init -)"
+RUN export PYENV_ROOT="/opt/.pyenv"
+RUN export PATH="/opt/.pyenv/bin:$PATH"
+RUN eval "$(/opt/.pyenv/bin/pyenv init -)"
 RUN cp -r /usr/include/openssl /usr/lib/ssl/
-RUN export PATH=/usr/lib/x86_64-linux-gnu:$PATH
+RUN export PATH="/usr/lib/x86_64-linux-gnu:$PATH"
 RUN pyenv install -v 3.10.17
 
-RUN pyenv global 3.10.17
+RUN /opt/.pyenv/bin/pyenv global 3.10.17
 RUN pip install pipenv
 
 # copy entrypoint
