@@ -36,19 +36,19 @@ jobs:
           export PATH="$PYENV_ROOT/bin:$PATH"
           echo "$PYENV_ROOT/bin" >> $GITHUB_PATH
           eval "$(pyenv init -)"
-          export CPPFLAGS="-I/usr/include -I/usr/include/openssl" \
-          export LDFLAGS="-Wl,-rpath,/usr/lib,/usr/lib/x86_64-linux-gnu/"
           #export CONFIGURE_OPTS="--with-openssl=/usr/lib/x86_64-linux-gnu/ --with-openssl-rpath=auto"
-          export CONFIGURE_OPTS="--with-openssl-rpath=auto"
-          echo $CPPFLAGS
-          echo $LDFLAGS
-          echo $CONFIGURE_OPTS
+          #echo $CPPFLAGS
+          #echo $LDFLAGS
+          #echo $CONFIGURE_OPTS
           #find $(openssl version -d| cut -d"\"" -f2)
           #find /usr/local/include
           #find /usr/local/lib
           dpkg -L libssl-dev
           sudo mkdir /usr/lib/ssl/openssl
           sudo cp /usr/include/openssl/ssl.h /usr/lib/ssl/openssl/
+          CPPFLAGS="-I/usr/include -I/usr/include/openssl" \
+          LDFLAGS="-Wl,-rpath,/usr/lib,/usr/lib/x86_64-linux-gnu/" \
+          CONFIGURE_OPTS="--with-openssl-rpath=auto" \
           pyenv install -v 3.10.17
 
       
