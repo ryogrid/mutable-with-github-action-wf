@@ -36,8 +36,12 @@ jobs:
           export PATH="$PYENV_ROOT/bin:$PATH"
           echo "$PYENV_ROOT/bin" >> $GITHUB_PATH
           eval "$(pyenv init -)"
+          export CPPFLAGS="-I$(openssl version -d| cut -d"\"" -f2)/include" \
           export LDFLAGS="-Wl,-rpath,$(openssl version -d| cut -d"\"" -f2)/lib"
           export CONFIGURE_OPTS="--with-openssl=$(openssl version -d| cut -d"\"" -f2) --with-openssl-rpath=auto"
+          echo $CPPFLAGS
+          echo $LDFLAGS
+          echo $CONFIGURE_OPTS
           pyenv install -v 3.10.17
 
       
