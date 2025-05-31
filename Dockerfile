@@ -16,7 +16,6 @@ RUN apt-get update && \
     libfmt-dev \
     python3-pip \
     libssl-dev
-RUN git clone 
 RUN git clone https://github.com/pyenv/pyenv.git .pyenv
 RUN export PYENV_ROOT="$(pwd)/.pyenv"
 RUN export PATH="$PYENV_ROOT/bin:$PATH"
@@ -28,11 +27,6 @@ RUN pyenv install -v 3.10.17
 RUN REV=$(git rev-parse --short HEAD)
 RUN BRANCH=$(git rev-parse --abbrev-ref HEAD)
 RUN TAG=$(git describe --tags --always --dirty)
-RUN cat > include/mutable/gitversion.tbl <<'EOF'
-    constexpr const char GIT_REV[]      = "${REV}";
-    constexpr const char GIT_BRANCH[]   = "${BRANCH}";
-    constexpr const char SEM_VERSION[]  = "${TAG}";
-    EOF
 RUN pyenv global 3.10.17
 RUN pip install pipenv
 
