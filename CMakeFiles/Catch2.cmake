@@ -1,14 +1,12 @@
 # Catch2 - Unit Testing Framework
-set(CATCH2_VERSION "v2.13.10") # 182c910b4b63ff587a3440e08f84f70497e49a81
-FetchContent_Populate(
-    Catch2
-    URL "https://raw.githubusercontent.com/catchorg/Catch2/${CATCH2_VERSION}/single_include/catch2/catch.hpp"
-    URL_HASH MD5=0e9367cfe53621c8669af73e34a8c556
-    SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third-party/catch2-${CATCH2_VERSION}/include/catch2"
-    DOWNLOAD_NO_EXTRACT TRUE
-    SYSTEM
-    EXCLUDE_FROM_ALL
+include(FetchContent)
+set(CATCH2_VERSION v2.13.10)
+FetchContent_Declare(
+  Catch2
+  URL       https://github.com/catchorg/Catch2/archive/${CATCH2_VERSION}.tar.gz
+  URL_HASH  SHA256=3d77741c4172f1d1a4d19f13571f8856d2dd90f4c0a79df3a8bfda9e38d9e801
 )
+FetchContent_MakeAvailable(Catch2)
 if(CMAKE_BUILD_TYPE MATCHES Debug)
     include_directories(SYSTEM "${CMAKE_CURRENT_SOURCE_DIR}/third-party/catch2-${CATCH2_VERSION}/include")
 endif()
