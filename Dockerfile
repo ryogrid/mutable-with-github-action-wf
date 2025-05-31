@@ -7,13 +7,13 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV CC=clang
 ENV CXX=clang++
 
-RUN git clone -b docker-file https://github.com/ryogrid/mutable-with-github-action-wf.git mutable
+RUN git clone -b docker-file2 https://github.com/ryogrid/mutable-with-github-action-wf.git mutable
 RUN cd mutable
 RUN wget -qO- https://apt.llvm.org/llvm.sh | sudo bash -s -- 18
 ENV PATH="/usr/lib/llvm-18/bin:$PATH"
-#RUN wget https://cmake.org/files/v3.21/cmake-3.21.0-linux-x86_64.sh
-#RUN /bin/bash cmake-3.21.0-linux-x86_64.sh --skip-license
-#RUN ln -s /opt/bin/* /usr/bin
+RUN wget https://cmake.org/files/v3.21/cmake-3.21.0-linux-x86_64.sh
+RUN /bin/bash cmake-3.21.0-linux-x86_64.sh --skip-license
+RUN ln -s /opt/bin/* /usr/bin
 RUN apt-get update && \
     apt-get install -y \
     ninja-build \
@@ -21,7 +21,6 @@ RUN apt-get update && \
     libtbb-dev \
     libfmt-dev \
     python3-pip \
-    cmake \
     libssl-dev
 RUN git clone https://github.com/pyenv/pyenv.git .pyenv
 ENV PYENV_ROOT="/opt/.pyenv"
