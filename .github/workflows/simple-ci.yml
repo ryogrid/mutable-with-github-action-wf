@@ -30,7 +30,7 @@ jobs:
         run: | 
           wget -qO- https://apt.llvm.org/llvm.sh | sudo bash -s -- 18
           echo "/usr/lib/llvm-18/bin" >> $GITHUB_PATH
-          sudo apt-get update && sudo apt-get install -y ninja-build libboost-dev libtbb-dev libfmt-dev
+          sudo apt-get update && sudo apt-get install -y ninja-build libboost-dev libtbb-dev libfmt-dev python3-pip pipenv
       
       - name: Generate gitversion.tbl
         run: |
@@ -53,8 +53,8 @@ jobs:
                 -DBUILD_TESTING=ON \
                 -DCMAKE_BUILD_TYPE=Debug
           cmake --build build -j$(nproc)
-          # cmake --build build --target check-unit
-          cmake --build build --target check-integration
+          cmake --build build --target check-unit
+          #cmake --build build --target check-integration
 
       - name: Package build artifacts
         run: |
