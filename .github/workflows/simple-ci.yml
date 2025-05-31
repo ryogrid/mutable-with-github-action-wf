@@ -26,11 +26,16 @@ jobs:
       - uses: actions/checkout@v4
         with: {fetch-depth: 0}
       
-      - name: LLVM / Clang 18
+      - name: LLVM / Clang 18 / Python env
         run: | 
           wget -qO- https://apt.llvm.org/llvm.sh | sudo bash -s -- 18
           echo "/usr/lib/llvm-18/bin" >> $GITHUB_PATH
-          sudo apt-get update && sudo apt-get install -y ninja-build libboost-dev libtbb-dev libfmt-dev python3-pip pipenv
+          sudo apt-get update && sudo apt-get install -y ninja-build libboost-dev libtbb-dev libfmt-dev python3-pip pipen
+          v
+          git clone https://github.com/pyenv/pyenv.git .pyenv
+          export PYENV_ROOT="$(pwd)/.pyenv"
+          echo "$PYENV_ROOT/bin" >> $GITHUB_PATH
+
       
       - name: Generate gitversion.tbl
         run: |
@@ -45,6 +50,7 @@ jobs:
       
       - name: Configure & Build
         run: |
+          export PYENV_ROOT="$(pwd)/.pyenv"
           cmake -S . -B build -G Ninja -LAH \
                 -DWITH_V8=OFF \
                 -DTHIRD_PARTY_BOOST=OFF \
