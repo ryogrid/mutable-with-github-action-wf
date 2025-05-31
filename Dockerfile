@@ -1,4 +1,4 @@
-FROM ghcr.io/catthehacker/ubuntu:full-22.04
+FROM ghcr.io/catthehacker/ubuntu:act-22.04
 
 SHELL ["/bin/bash", "-c"]
 WORKDIR /opt
@@ -18,6 +18,7 @@ RUN apt-get update && \
     libtbb-dev \
     libfmt-dev \
     python3-pip \
+    cmake \
     libssl-dev
 RUN git clone https://github.com/pyenv/pyenv.git .pyenv
 ENV PYENV_ROOT="/opt/.pyenv"
