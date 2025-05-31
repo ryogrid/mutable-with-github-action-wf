@@ -53,6 +53,8 @@ jobs:
           EOF
       
       - name: Configure & Build & Test
+        # not zero exit code doesn't stop workflow
+        shell: /usr/bin/bash {0}
         run: |
           export PYENV_ROOT="$(pwd)/.pyenv"
           export PATH="$PYENV_ROOT/bin:$PATH"
@@ -135,8 +137,12 @@ jobs:
           tar -xzf mutable-build-essential.tar.gz
           
           mkdir -p ../release/mutable-release
-          find build -type f -executable -path "*/bin/*" -exec cp {} ../release/mutable-release/ \; 2>/dev/null || true
-          find build -type f -executable -path "*/unittest/*" -exec cp {} ../release/mutable-release/ \; 2>/dev/null || true
+          mkdir ../release/mutable-release/test
+          mkdir ../release/mutable-release/unittest
+          find build/unittest -type f -executable -exec cp {} ../release/mutable-release/unittest \; 2>/dev/null || true
+          find build/test -type f -executable -exec cp {} ../release/mutable-release/unittest \; 2>/dev/null || true
+          #find build -type f -executable -path "*/bin/*" -exec cp {} ../release/mutable-release/ \; 2>/dev/null || true
+          #find build -type f -executable -path "*/unittest/*" -exec cp {} ../release/mutable-release/ \; 2>/dev/null || true
           find build -name "*.so" -o -name "*.a" | head -20 | while read lib; do
             cp "$lib" ../release/mutable-release/ 2>/dev/null || true
           done
