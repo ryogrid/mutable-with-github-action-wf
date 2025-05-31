@@ -37,8 +37,9 @@ jobs:
           echo "$PYENV_ROOT/bin" >> $GITHUB_PATH
           eval "$(pyenv init -)"
           export CPPFLAGS="-I/usr/include -I/usr/include/openssl" \
-          export LDFLAGS="-Wl,-rpath,/usr/lib"
-          export CONFIGURE_OPTS="--with-openssl=/usr/lib/x86_64-linux-gnu/ --with-openssl-rpath=auto"
+          export LDFLAGS="-Wl,-rpath,/usr/lib,/usr/lib/x86_64-linux-gnu/"
+          #export CONFIGURE_OPTS="--with-openssl=/usr/lib/x86_64-linux-gnu/ --with-openssl-rpath=auto"
+          export CONFIGURE_OPTS="--with-openssl-rpath=auto"
           echo $CPPFLAGS
           echo $LDFLAGS
           echo $CONFIGURE_OPTS
