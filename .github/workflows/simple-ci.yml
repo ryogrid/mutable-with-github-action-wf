@@ -36,8 +36,9 @@ jobs:
           export PATH="$PYENV_ROOT/bin:$PATH"
           echo "$PYENV_ROOT/bin" >> $GITHUB_PATH
           eval "$(pyenv init -)"
-          CONFIGURE_OPTS="--with-openssl=$(openssl version -d| cut -d"\"" -f2)"  \
-          pyenv install 3.1.0
+          LDFLAGS="-Wl,-rpath,$(openssl version -d| cut -d"\"" -f2)/lib" \
+          CONFIGURE_OPTS="--with-openssl=$(openssl version -d| cut -d"\"" -f2) --with-openssl-rpath=auto" \
+          pyenv install 3.10
 
       
       - name: Generate gitversion.tbl
