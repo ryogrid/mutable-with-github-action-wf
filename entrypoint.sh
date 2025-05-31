@@ -6,7 +6,7 @@ export CC=clang
 export CXX=clang++
 export PYENV_ROOT="/opt/.pyenv"
 export PATH="/usr/lib/llvm-18/bin:/usr/lib/x86_64-linux-gnu:$PYENV_ROOT/bin:$PATH"
-eval "$(/opt/.pyent/bin/pyenv init -)"
+eval "$(/opt/.pyenv/bin/pyenv init -)"
 /opt/.pyenv/bin/pyenv global 3.10.17
 
 REV=$(git rev-parse --short HEAD)
@@ -18,6 +18,7 @@ constexpr const char GIT_BRANCH[]   = "${BRANCH}";
 constexpr const char SEM_VERSION[]  = "${TAG}";
 EOF
 
+sed -i '/SYSTEM/d' CMakeFiles/Catch2.cmake
 cmake -S . -B build -G Ninja -LAH \
     -DWITH_V8=OFF \
     -DTHIRD_PARTY_BOOST=OFF \

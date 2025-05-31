@@ -10,7 +10,10 @@ ENV CXX=clang++
 RUN git clone -b docker-file https://github.com/ryogrid/mutable-with-github-action-wf.git mutable
 RUN cd mutable
 RUN wget -qO- https://apt.llvm.org/llvm.sh | sudo bash -s -- 18
-RUN export PATH="/usr/lib/llvm-18/bin:$PATH"
+ENV PATH="/usr/lib/llvm-18/bin:$PATH"
+#RUN wget https://cmake.org/files/v3.21/cmake-3.21.0-linux-x86_64.sh
+#RUN /bin/bash cmake-3.21.0-linux-x86_64.sh --skip-license
+#RUN ln -s /opt/bin/* /usr/bin
 RUN apt-get update && \
     apt-get install -y \
     ninja-build \
@@ -25,7 +28,6 @@ ENV PYENV_ROOT="/opt/.pyenv"
 ENV PATH="/opt/.pyenv/bin:$PATH"
 RUN eval "$(/opt/.pyenv/bin/pyenv init -)"
 RUN cp -r /usr/include/openssl /usr/lib/ssl/
-#ENV PATH "/usr/lib/x86_64-linux-gnu:$PATH"
 RUN CC=gcc /opt/.pyenv/bin/pyenv install -v 3.10.17
 
 RUN /opt/.pyenv/bin/pyenv global 3.10.17
