@@ -1,6 +1,6 @@
 # Catch2 - Unit Testing Framework
 set(CATCH2_VERSION "v2.13.10") # 182c910b4b63ff587a3440e08f84f70497e49a81
-FetchContent_Populate(
+FetchContent_MakeAvailable(
     Catch2
     URL "https://raw.githubusercontent.com/catchorg/Catch2/${CATCH2_VERSION}/single_include/catch2/catch.hpp"
     SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third-party/catch2-${CATCH2_VERSION}/include/catch2"
