@@ -24,9 +24,6 @@ RUN cp -r /usr/include/openssl /usr/lib/ssl/
 RUN export PATH=/usr/lib/x86_64-linux-gnu:$PATH
 RUN pyenv install -v 3.10.17
 
-RUN REV=$(git rev-parse --short HEAD)
-RUN BRANCH=$(git rev-parse --abbrev-ref HEAD)
-RUN TAG=$(git describe --tags --always --dirty)
 RUN pyenv global 3.10.17
 RUN pip install pipenv
 
