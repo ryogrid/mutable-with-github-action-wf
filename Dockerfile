@@ -7,7 +7,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV CC=clang
 ENV CXX=clang++
 
-RUN git clone -b docker-file2 https://github.com/ryogrid/mutable-with-github-action-wf.git mutable
+RUN git clone -b docker-file3 https://github.com/ryogrid/mutable-with-github-action-wf.git mutable
 RUN cd mutable
 RUN wget -qO- https://apt.llvm.org/llvm.sh | sudo bash -s -- 18
 ENV PATH="/usr/lib/llvm-18/bin:$PATH"
